@@ -129,14 +129,20 @@ final class Runner: ObservableObject {
 
                 """, true)
         }
-        if needsLogFiles, !files.contains(where: { $0.lowercased().hasSuffix(".log") }) {
-            return ("""
-                Suivi impossible : aucun fichier .log à la racine de \(shown).
+        if needsLogFiles {
+            // Même périmètre que la commande : la racine et ses sous-dossiers directs.
+            let isLog = { (name: String) in name.lowercased().hasSuffix(".log") }
+            let inSubfolders = files.contains { name in
+                ((try? FileManager.default.contentsOfDirectory(atPath: dir + "/" + name)) ?? []).contains(where: isLog)
+            }
+            if !files.contains(where: isLog) && !inSubfolders {
+                return ("""
+                    Suivi impossible : aucun fichier .log dans \(shown) ni dans ses sous-dossiers.
 
-                La commande suit uniquement les fichiers *.log placés à la racine de ce dossier. \
-                Il contient \(files.count) élément(s), mais aucun dans ce format.
+                    Lancez OneDrive et laissez une synchronisation se faire, puis redémarrez le suivi.
 
-                """, false)
+                    """, false)
+            }
         }
         return nil
     }

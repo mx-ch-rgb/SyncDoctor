@@ -51,6 +51,9 @@ enum OneDriveLogs {
 
     static let locationNote = "Emplacement des journaux : ~/Library/Logs/OneDrive pour la version autonome, ~/Library/Containers/com.microsoft.OneDrive-mac/Data/Library/Logs pour la version Mac App Store. SyncDoctor utilise celui qui correspond à la version installée. Pour la version Mac App Store, ce dossier appartient à une autre app : macOS n’en autorise la lecture qu’avec votre accord."
 
+    /// Constaté sur les journaux de la version Mac App Store.
+    static let formatNote = "Les journaux sont rangés dans des sous-dossiers (un par compte, par exemple Personal). Seuls les fichiers .log (OneDrive-*.log, SyncDiagnostics.log) sont du texte lisible ; les fichiers SyncEngine-*.odl et .aodl sont binaires."
+
     static let collectNote = "Pour le support, Microsoft fournit aussi dans OneDrive.app le script Contents/Resources/CollectLogs.command, qui crée sur le Bureau une archive des journaux."
 }
 
@@ -88,8 +91,8 @@ enum Steps {
             id: 4,
             title: "Journaux récents",
             symbol: "doc.text",
-            explanation: "Liste les 20 éléments les plus récents du dossier des journaux. " + OneDriveLogs.locationNote + " " + OneDriveLogs.collectNote,
-            command: "ls -lht \(logs)/ | head -20",
+            explanation: "Liste les 20 fichiers de journaux les plus récents, sous-dossiers compris. " + OneDriveLogs.formatNote + " " + OneDriveLogs.locationNote + " " + OneDriveLogs.collectNote,
+            command: "find \(logs) -type f -exec ls -lht {} + 2>/dev/null | head -20",
             emptyHint: "Aucun journal trouvé.",
             needs: .logs
         ),
@@ -97,18 +100,18 @@ enum Steps {
             id: 5,
             title: "Erreurs récentes",
             symbol: "exclamationmark.triangle",
-            explanation: "Recherche les 50 dernières lignes d’erreur dans les journaux. Ce sont ces lignes qu’il faut copier pour le support. " + OneDriveLogs.locationNote,
-            command: #"grep -RniE "error|failed|conflict|blocked|denied|quota|401|403|429|500|503" \#(logs)/ 2>/dev/null | tail -50"#,
-            emptyHint: "Aucune erreur trouvée dans les journaux.",
+            explanation: "Recherche les 50 dernières lignes d’erreur dans les journaux lisibles. Ce sont ces lignes qu’il faut copier pour le support. L’option -I écarte les fichiers binaires. " + OneDriveLogs.formatNote + " " + OneDriveLogs.locationNote,
+            command: #"grep -RniIE "error|failed|conflict|blocked|denied|quota|401|403|429|500|503" \#(logs)/ 2>/dev/null | tail -50"#,
+            emptyHint: "Aucune erreur trouvée dans les journaux lisibles.",
             needs: .logs
         ),
         DiagStep(
             id: 6,
             title: "Erreurs en temps réel",
             symbol: "waveform.path.ecg",
-            explanation: "Démarrez le suivi, puis déclenchez une synchronisation ou modifiez un fichier test. Les erreurs s’affichent au fil de l’eau. Arrêtez avec le bouton « Arrêter ». Seuls les fichiers .log placés à la racine du dossier des journaux sont suivis.",
+            explanation: "Démarrez le suivi, puis déclenchez une synchronisation ou modifiez un fichier test. Les erreurs s’affichent au fil de l’eau. Arrêtez avec le bouton « Arrêter ». Le suivi porte sur les fichiers .log du dossier des journaux et de ses sous-dossiers, tels qu’ils existent au démarrage du suivi : relancez-le après un redémarrage de OneDrive, qui crée de nouveaux fichiers.",
             // --line-buffered : sans lui grep retient ses lignes tant que sa sortie n’est pas un terminal.
-            command: #"tail -f \#(logs)/*.log 2>/dev/null | grep --line-buffered -iE "error|failed|conflict|denied|blocked""#,
+            command: #"tail -f \#(logs)/*.log \#(logs)/*/*.log 2>/dev/null | grep --line-buffered -iE "error|failed|conflict|denied|blocked""#,
             emptyHint: "Aucune erreur capturée pendant le suivi.",
             isStream: true,
             inFullRun: false,
@@ -171,9 +174,9 @@ enum Steps {
             id: 13,
             title: "Journaux SharePoint",
             symbol: "building.2",
-            explanation: "Recherche les 50 dernières lignes des journaux qui mentionnent SharePoint. " + OneDriveLogs.locationNote,
-            command: #"grep -RniE "sharepoint|spo|sites|document.?library" \#(logs)/ 2>/dev/null | tail -50"#,
-            emptyHint: "Aucune mention de SharePoint dans les journaux.",
+            explanation: "Recherche les 50 dernières lignes des journaux lisibles qui mentionnent SharePoint. L’option -I écarte les fichiers binaires, et « spo » n’est reconnu que comme mot isolé, pour ne pas ramener toutes les lignes contenant « response ». " + OneDriveLogs.formatNote + " " + OneDriveLogs.locationNote,
+            command: #"grep -RniIE "sharepoint|(^|[^a-z])spo([^a-z]|$)|sites|document.?library" \#(logs)/ 2>/dev/null | tail -50"#,
+            emptyHint: "Aucune mention de SharePoint dans les journaux lisibles.",
             needs: .logs
         ),
         DiagStep(

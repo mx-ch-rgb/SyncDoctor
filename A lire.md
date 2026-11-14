@@ -9,7 +9,7 @@ SyncDoctor aide à comprendre pourquoi OneDrive ou une bibliothèque SharePoint 
 
 ## Installation
 
-1. Téléchargez [SyncDoctor-1.2.1.dmg](https://github.com/mx-ch-rgb/SyncDoctor/releases/latest/download/SyncDoctor-1.2.1.dmg).
+1. Téléchargez [SyncDoctor-1.2.2.dmg](https://github.com/mx-ch-rgb/SyncDoctor/releases/latest/download/SyncDoctor-1.2.2.dmg).
 2. Ouvrez le fichier, puis glissez SyncDoctor dans le dossier Applications.
 3. Lancez l'app depuis Applications. macOS indique qu'elle a été téléchargée depuis Internet : cliquez sur Ouvrir. L'app est signée et notarisée par Apple.
 

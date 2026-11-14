@@ -10,7 +10,7 @@ Tout le diagnostic est en lecture seule : l'app ne supprime rien et ne réinitia
 
 ## Téléchargement
 
-[Télécharger SyncDoctor (.dmg)](https://github.com/mx-ch-rgb/SyncDoctor/releases/latest/download/SyncDoctor-1.2.1.dmg)
+[Télécharger SyncDoctor (.dmg)](https://github.com/mx-ch-rgb/SyncDoctor/releases/latest/download/SyncDoctor-1.2.2.dmg)
 
 - macOS 27.2 ou ultérieur, Mac Apple Silicon.
 - App signée et notarisée par Apple.
@@ -39,19 +39,21 @@ Les captures utilisent des données d'exemple.
 | 1 | OneDrive est-il lancé ? | `pgrep -fl "OneDrive"` |
 | 2 | Version et identifiant de OneDrive | `defaults read /Applications/OneDrive.app/Contents/Info.plist CFBundleShortVersionString` puis `/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' /Applications/OneDrive.app/Contents/Info.plist` |
 | 3 | Espace disque disponible | `df -h /` |
-| 4 | Journaux récents | `ls -lht <journaux>/ \| head -20` |
-| 5 | Erreurs récentes | `grep -RniE "error\|failed\|conflict\|blocked\|denied\|quota\|401\|403\|429\|500\|503" <journaux>/ \| tail -50` |
-| 6 | Erreurs en temps réel | `tail -f <journaux>/*.log \| grep -iE "error\|failed\|conflict\|denied\|blocked"` |
+| 4 | Journaux récents | `find <journaux> -type f -exec ls -lht {} + \| head -20` |
+| 5 | Erreurs récentes | `grep -RniIE "error\|failed\|conflict\|blocked\|denied\|quota\|401\|403\|429\|500\|503" <journaux>/ \| tail -50` |
+| 6 | Erreurs en temps réel | `tail -f <journaux>/*.log <journaux>/*/*.log \| grep -iE "error\|failed\|conflict\|denied\|blocked"` |
 | 7 | Fichiers en conflit | `find ~/OneDrive ~/Library/CloudStorage/OneDrive* -type f \( -iname "*conflict*" -o -iname "*-copie*" -o -iname "*-copy*" \)` |
 | 8 | Fichiers modifiés depuis 24 h | `find ~/OneDrive ~/Library/CloudStorage/OneDrive* -type f -mtime -1` |
 | 9 | Fichiers de plus de 500 Mo | `find ~/OneDrive ~/Library/CloudStorage/OneDrive* -type f -size +500M -exec ls -lh {} \;` |
 | 10 | Nombre d'éléments et de dossiers | comptage des éléments, des dossiers et des niveaux d'imbrication de chaque emplacement OneDrive (`find` et `awk`) |
 | 11 | Noms et chemins trop longs | liste, avec leur chemin, des éléments dépassant 255 caractères pour le nom, 400 pour le chemin ou 520 pour le chemin local (`find` et `perl`) |
 | 12 | Emplacements OneDrive et SharePoint | `ls -ld ~/Library/CloudStorage/OneDrive*` |
-| 13 | Journaux SharePoint | `grep -RniE "sharepoint\|spo\|sites\|document.?library" <journaux>/ \| tail -50` |
+| 13 | Journaux SharePoint | `grep -RniIE "sharepoint\|(^\|[^a-z])spo([^a-z]\|$)\|sites\|document.?library" <journaux>/ \| tail -50` |
 | 14 | Redémarrer OneDrive | `osascript -e 'quit app "OneDrive"'; sleep 5 && open -a OneDrive` |
 
 Les commandes complètes des étapes 10 et 11 s'affichent dans l'app. Les limites utilisées sont celles de Microsoft : 300 000 éléments au plus pour l'ensemble des bibliothèques synchronisées (Microsoft ne fixe pas de nombre maximal de sous-dossiers), 255 caractères par nom, 400 caractères pour le chemin complet et 520 pour le chemin local.
+
+Les journaux sont rangés dans des sous-dossiers, un par compte. Seuls les fichiers `.log` (`OneDrive-*.log`, `SyncDiagnostics.log`) sont du texte lisible ; les fichiers `SyncEngine-*.odl` et `.aodl` sont binaires, d'où l'option `-I` des recherches.
 
 `<journaux>` dépend de la version de OneDrive installée, que l'app détecte :
 
