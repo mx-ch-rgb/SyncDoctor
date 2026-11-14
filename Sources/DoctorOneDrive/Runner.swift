@@ -11,6 +11,8 @@ struct StepState {
 final class Runner: ObservableObject {
     @Published var states: [Int: StepState] = [:]
     @Published var fullRunActive = false
+    /// Étapes dont le dernier lancement a buté sur un refus d’accès de macOS.
+    @Published var denied: Set<Int> = []
 
     private var procs: [Int: Process] = [:]
     private var completions: [Int: () -> Void] = [:]
@@ -27,13 +29,31 @@ final class Runner: ObservableObject {
     func run(_ step: DiagStep, completion: (() -> Void)? = nil) {
         guard procs[step.id] == nil else { return }
         let id = step.id
-        // Sans fichier .log, tail -f s’arrête aussitôt : on l’explique au lieu de laisser un écran vide.
-        if step.isStream, let problem = Self.streamProblem() {
-            states[id] = StepState(output: problem, running: false, lastRun: Date())
-            completion?()
-            return
+        // Dossier protégé illisible : on le dit, au lieu de laisser la commande conclure « rien trouvé ».
+        var preface = ""
+        switch step.needs {
+        case .nothing:
+            break
+        case .logs:
+            if let problem = Self.logsProblem(needsLogFiles: step.isStream) {
+                if problem.denied { denied.insert(id) } else { denied.remove(id) }
+                states[id] = StepState(output: problem.text, running: false, lastRun: Date())
+                completion?()
+                return
+            }
+            denied.remove(id)
+        case .syncFolders:
+            let blocked = Self.unreadableSyncFolders()
+            if blocked.isEmpty {
+                denied.remove(id)
+            } else {
+                denied.insert(id)
+                preface = "Attention : macOS refuse l’accès à " + blocked.joined(separator: ", ")
+                    + ". Le résultat ci-dessous est donc incomplet. Autorisez DoctorOneDrive dans Réglages Système > "
+                    + "Confidentialité et sécurité (Fichiers et dossiers, ou Accès complet au disque), puis relancez.\n\n"
+            }
         }
-        states[id] = StepState(output: "", running: true, lastRun: Date())
+        states[id] = StepState(output: preface, running: true, lastRun: Date())
         completions[id] = completion
 
         let p = Process()
@@ -46,14 +66,19 @@ final class Runner: ObservableObject {
         p.standardInput = FileHandle.nullDevice
 
         // La fin est signalée par l’EOF du tube, donc après la dernière ligne de sortie.
+        let decoder = UTF8Chunker()
         pipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
             let data = handle.availableData
             if data.isEmpty {
                 handle.readabilityHandler = nil
-                DispatchQueue.main.async { self?.finish(id) }
+                let rest = decoder.flush()
+                DispatchQueue.main.async {
+                    if !rest.isEmpty { self?.append(id, rest) }
+                    self?.finish(id)
+                }
             } else {
-                let text = String(decoding: data, as: UTF8.self)
-                DispatchQueue.main.async { self?.append(id, text) }
+                let text = decoder.feed(data)
+                if !text.isEmpty { DispatchQueue.main.async { self?.append(id, text) } }
             }
         }
 
@@ -67,30 +92,55 @@ final class Runner: ObservableObject {
         }
     }
 
-    /// Raison pour laquelle le suivi temps réel ne peut pas démarrer, ou nil si tout est prêt.
-    private static func streamProblem() -> String? {
-        let dir = NSHomeDirectory() + "/Library/Logs/OneDrive"
+    /// Raison pour laquelle les journaux sont illisibles, ou nil si tout est prêt.
+    private static func logsProblem(needsLogFiles: Bool) -> (text: String, denied: Bool)? {
+        let shown = OneDriveLogs.dir
+        let dir = OneDriveLogs.expandedDir
         var isDir: ObjCBool = false
         guard FileManager.default.fileExists(atPath: dir, isDirectory: &isDir), isDir.boolValue else {
-            return """
-                Suivi impossible : le dossier ~/Library/Logs/OneDrive n’existe pas.
+            return ("""
+                Le dossier des journaux \(shown) n’existe pas.
 
-                OneDrive n’a encore écrit aucun journal sur ce Mac. Lancez OneDrive, connectez-vous \
-                à votre compte, laissez une synchronisation se faire, puis redémarrez le suivi.
+                OneDrive n’a encore écrit aucun journal à cet emplacement. Lancez OneDrive, connectez-vous \
+                à votre compte, laissez une synchronisation se faire, puis relancez.
 
-                """
+                """, false)
         }
-        let files = (try? FileManager.default.contentsOfDirectory(atPath: dir)) ?? []
-        guard files.contains(where: { $0.lowercased().hasSuffix(".log") }) else {
-            return """
-                Suivi impossible : aucun fichier .log dans ~/Library/Logs/OneDrive.
+        let files: [String]
+        do {
+            files = try FileManager.default.contentsOfDirectory(atPath: dir)
+        } catch {
+            return ("""
+                macOS refuse à DoctorOneDrive l’accès au dossier des journaux \(shown).
+
+                Ce dossier appartient à OneDrive. Pour le lire, ajoutez DoctorOneDrive dans Réglages Système > \
+                Confidentialité et sécurité > Accès complet au disque, puis relancez cette étape. \
+                Sans cet accord, cette étape ne peut rien conclure : ce n’est pas un résultat « sans erreur ».
+
+                \(OneDriveLogs.collectNote)
+
+                Détail : \(error.localizedDescription)
+
+                """, true)
+        }
+        if needsLogFiles, !files.contains(where: { $0.lowercased().hasSuffix(".log") }) {
+            return ("""
+                Suivi impossible : aucun fichier .log à la racine de \(shown).
 
                 La commande suit uniquement les fichiers *.log placés à la racine de ce dossier. \
-                Le dossier contient \(files.count) élément(s), mais aucun dans ce format.
+                Il contient \(files.count) élément(s), mais aucun dans ce format.
 
-                """
+                """, false)
         }
         return nil
+    }
+
+    /// Dossiers OneDrive de ~/Library/CloudStorage que macOS ne laisse pas lire.
+    private static func unreadableSyncFolders() -> [String] {
+        let fm = FileManager.default
+        let base = NSHomeDirectory() + "/Library/CloudStorage"
+        let names = ((try? fm.contentsOfDirectory(atPath: base)) ?? []).filter { $0.hasPrefix("OneDrive") }
+        return names.sorted().filter { (try? fm.contentsOfDirectory(atPath: base + "/" + $0)) == nil }
     }
 
     func stop(_ id: Int) {
@@ -146,7 +196,8 @@ final class Runner: ObservableObject {
 
     // MARK: - Rapport
 
-    var hasResults: Bool { states.values.contains { $0.lastRun != nil } }
+    /// Vrai dès qu’une étape du diagnostic (et non du guide « Deux versions ») a été exécutée.
+    var hasResults: Bool { Steps.all.contains { state($0.id).lastRun != nil } }
 
     func report() -> String {
         let df = DateFormatter()
@@ -156,6 +207,7 @@ final class Runner: ObservableObject {
         var out = "DoctorOneDrive — rapport de diagnostic\n"
         out += "Date : \(df.string(from: Date()))\n"
         out += "macOS : \(ProcessInfo.processInfo.operatingSystemVersionString)\n"
+        out += "Dossier des journaux : \(OneDriveLogs.dir)\n"
         for step in Steps.all {
             let s = state(step.id)
             guard s.lastRun != nil else { continue }
@@ -165,5 +217,29 @@ final class Runner: ObservableObject {
             out += (body.isEmpty ? "(\(step.emptyHint))" : body) + "\n"
         }
         return out
+    }
+}
+
+/// Reconstitue du texte UTF-8 à partir de blocs d’octets, sans couper un caractère à cheval sur deux blocs.
+final class UTF8Chunker {
+    private var pending = Data()
+
+    func feed(_ data: Data) -> String {
+        pending.append(data)
+        // Un caractère UTF-8 fait au plus 4 octets : on retient jusqu’à 3 octets de fin incomplets.
+        for cut in 0...min(3, pending.count) {
+            let head = pending.prefix(pending.count - cut)
+            if let text = String(data: head, encoding: .utf8) {
+                pending = Data(pending.suffix(cut))
+                return text
+            }
+        }
+        return flush()
+    }
+
+    /// Décode ce qui reste, en remplaçant les octets invalides (sortie binaire).
+    func flush() -> String {
+        defer { pending = Data() }
+        return String(decoding: pending, as: UTF8.self)
     }
 }
