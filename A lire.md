@@ -1,6 +1,6 @@
-# DoctorOneDrive — À lire
+# SyncDoctor pour OneDrive et SharePoint — À lire
 
-DoctorOneDrive aide à comprendre pourquoi OneDrive ou une bibliothèque SharePoint ne synchronise plus sur un Mac. Ce document explique comment l'installer et s'en servir.
+SyncDoctor aide à comprendre pourquoi OneDrive ou une bibliothèque SharePoint ne synchronise plus sur un Mac. Ce document explique comment l'installer et s'en servir.
 
 ## Ce qu'il faut
 
@@ -9,8 +9,8 @@ DoctorOneDrive aide à comprendre pourquoi OneDrive ou une bibliothèque SharePo
 
 ## Installation
 
-1. Téléchargez [DoctorOneDrive-1.1.dmg](https://github.com/mx-ch-rgb/DoctorOneDrive/releases/latest/download/DoctorOneDrive-1.1.dmg).
-2. Ouvrez le fichier, puis glissez DoctorOneDrive dans le dossier Applications.
+1. Téléchargez [SyncDoctor-1.2.dmg](https://github.com/mx-ch-rgb/SyncDoctor/releases/latest/download/SyncDoctor-1.2.dmg).
+2. Ouvrez le fichier, puis glissez SyncDoctor dans le dossier Applications.
 3. Lancez l'app depuis Applications. macOS indique qu'elle a été téléchargée depuis Internet : cliquez sur Ouvrir. L'app est signée et notarisée par Apple.
 
 ## Premier diagnostic
@@ -30,8 +30,8 @@ Pour l'accorder :
 
 1. Dans la barre latérale, ouvrez « Accès complet au disque ».
 2. Cliquez sur « Ouvrir Accès complet au disque » : Réglages Système s'ouvre sur la bonne page.
-3. Ajoutez DoctorOneDrive à la liste avec le bouton « + » et activez son interrupteur.
-4. Quittez puis rouvrez DoctorOneDrive.
+3. Ajoutez SyncDoctor à la liste avec le bouton « + » et activez son interrupteur.
+4. Quittez puis rouvrez SyncDoctor.
 
 ## Les 14 vérifications
 
@@ -65,10 +65,10 @@ Les textes d'aide reprennent les pages d'assistance de Microsoft, citées en bas
 
 ## Limites connues
 
-- DoctorOneDrive lit et affiche : il ne répare pas à votre place. Les commandes qui suppriment quelque chose sont seulement affichées, à copier dans le Terminal.
+- SyncDoctor lit et affiche : il ne répare pas à votre place. Les commandes qui suppriment quelque chose sont seulement affichées, à copier dans le Terminal.
 - Le comptage des éléments (étape 10) peut être long sur une grande bibliothèque.
-- L'app est indépendante et n'a aucun lien avec Microsoft.
+- L'app est indépendante et n'a aucun lien avec Microsoft. OneDrive et SharePoint sont des marques de Microsoft Corporation.
 
 ## Licence et auteur
 
-DoctorOneDrive est un logiciel libre sous licence MIT, conçu et développé par Marc Christiaens. Le code source est sur [GitHub](https://github.com/mx-ch-rgb/DoctorOneDrive).
+SyncDoctor est un logiciel libre sous licence MIT, conçu et développé par Marc Christiaens. Le code source est sur [GitHub](https://github.com/mx-ch-rgb/SyncDoctor).

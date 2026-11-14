@@ -1,15 +1,15 @@
 #!/bin/zsh
-# Compile DoctorOneDrive (arm64) et assemble build/DoctorOneDrive.app
+# Compile SyncDoctor (arm64) et assemble build/SyncDoctor.app
 set -euo pipefail
 cd "$(dirname "$0")"
 
-APP="build/DoctorOneDrive.app"
+APP="build/SyncDoctor.app"
 
 swift build -c release --arch arm64
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$(swift build -c release --arch arm64 --show-bin-path)/DoctorOneDrive" "$APP/Contents/MacOS/"
+cp "$(swift build -c release --arch arm64 --show-bin-path)/SyncDoctor" "$APP/Contents/MacOS/"
 cp Resources/Info.plist "$APP/Contents/"
 
 # Icône
@@ -30,7 +30,7 @@ if [[ "$SIGN_ID" == "-" ]]; then
   codesign --force --sign - "$APP"
 else
   codesign --force --options runtime --timestamp \
-    --entitlements Resources/DoctorOneDrive.entitlements --sign "$SIGN_ID" "$APP"
+    --entitlements Resources/SyncDoctor.entitlements --sign "$SIGN_ID" "$APP"
 fi
 codesign --verify --strict --verbose=2 "$APP"
 echo "OK : $APP"

@@ -49,7 +49,7 @@ final class Runner: ObservableObject {
             } else {
                 denied.insert(id)
                 preface = "Attention : macOS refuse l’accès à " + blocked.joined(separator: ", ")
-                    + ". Le résultat ci-dessous est donc incomplet. Autorisez DoctorOneDrive dans Réglages Système > "
+                    + ". Le résultat ci-dessous est donc incomplet. Autorisez SyncDoctor dans Réglages Système > "
                     + "Confidentialité et sécurité (Fichiers et dossiers, ou Accès complet au disque), puis relancez.\n\n"
             }
         }
@@ -111,9 +111,9 @@ final class Runner: ObservableObject {
             files = try FileManager.default.contentsOfDirectory(atPath: dir)
         } catch {
             return ("""
-                macOS refuse à DoctorOneDrive l’accès au dossier des journaux \(shown).
+                macOS refuse à SyncDoctor l’accès au dossier des journaux \(shown).
 
-                Ce dossier appartient à OneDrive. Pour le lire, ajoutez DoctorOneDrive dans Réglages Système > \
+                Ce dossier appartient à OneDrive. Pour le lire, ajoutez SyncDoctor dans Réglages Système > \
                 Confidentialité et sécurité > Accès complet au disque, puis relancez cette étape. \
                 Sans cet accord, cette étape ne peut rien conclure : ce n’est pas un résultat « sans erreur ».
 
@@ -204,7 +204,7 @@ final class Runner: ObservableObject {
         df.dateStyle = .long
         df.timeStyle = .medium
         df.locale = Locale(identifier: "fr_FR")
-        var out = "DoctorOneDrive — rapport de diagnostic\n"
+        var out = "SyncDoctor — rapport de diagnostic\n"
         out += "Date : \(df.string(from: Date()))\n"
         out += "macOS : \(ProcessInfo.processInfo.operatingSystemVersionString)\n"
         out += "Dossier des journaux : \(OneDriveLogs.dir)\n"

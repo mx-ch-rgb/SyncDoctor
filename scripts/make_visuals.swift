@@ -101,9 +101,10 @@ case "banner":
                 .paragraphStyle: style,
             ]).draw(with: NSRect(x: 80, y: h - top - 500, width: width, height: 500), options: [.usesLineFragmentOrigin])
         }
-        text("DoctorOneDrive", size: 104, weight: .bold, alpha: 1, top: 450)
-        text("Le diagnostic OneDrive\net SharePoint pour Mac,\nen un clic.", size: 58, weight: .medium, alpha: 0.95, top: 610)
-        text("14 vérifications · lecture seule\ngratuit et open source", size: 36, weight: .regular, alpha: 0.85, top: 960)
+        text("SyncDoctor", size: 124, weight: .bold, alpha: 1, top: 440)
+        text("Le diagnostic pour OneDrive\net SharePoint sur Mac,\nen un clic.", size: 56, weight: .medium, alpha: 0.95, top: 620)
+        text("14 vérifications · lecture seule\ngratuit et open source", size: 36, weight: .regular, alpha: 0.85, top: 930)
+        text("Application indépendante. OneDrive et SharePoint\nsont des marques de Microsoft Corporation.", size: 23, weight: .regular, alpha: 0.7, top: 1130)
     }
     save(out, args[4])
 

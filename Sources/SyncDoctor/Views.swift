@@ -640,7 +640,7 @@ struct ResetView: View {
 
                 Callout(
                     symbol: "exclamationmark.triangle.fill", tint: .orange,
-                    text: "Dernier recours. La réinitialisation n’est à envisager qu’après avoir épuisé le diagnostic et les conseils. DoctorOneDrive ne la lance pas à votre place : suivez les étapes ci-dessous, qui sont celles de Microsoft.")
+                    text: "Dernier recours. La réinitialisation n’est à envisager qu’après avoir épuisé le diagnostic et les conseils. SyncDoctor ne la lance pas à votre place : suivez les étapes ci-dessous, qui sont celles de Microsoft.")
 
                 GroupBox {
                     NumberedList(items: Advice.reset)

@@ -3,11 +3,11 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 @main
-struct DoctorOneDriveApp: App {
+struct SyncDoctorApp: App {
     @StateObject private var runner = Runner()
 
     var body: some Scene {
-        Window("DoctorOneDrive", id: "main") {
+        Window("SyncDoctor", id: "main") {
             ContentView()
                 .environmentObject(runner)
                 .frame(minWidth: 860, minHeight: 560)
@@ -17,7 +17,7 @@ struct DoctorOneDriveApp: App {
         .commands {
             CommandGroup(replacing: .newItem) {}
             CommandGroup(replacing: .appInfo) {
-                Button("À propos de DoctorOneDrive") { AboutPanel.show() }
+                Button("À propos de SyncDoctor") { AboutPanel.show() }
             }
             CommandMenu("Diagnostic") {
                 Button("Lancer le diagnostic complet") { runner.runAll() }
@@ -42,7 +42,7 @@ enum AboutPanel {
             string: "Conçu et développé par \(author)\n\n",
             attributes: [.font: NSFont.systemFont(ofSize: 12, weight: .semibold), .foregroundColor: NSColor.labelColor])
         credits.append(NSAttributedString(
-            string: "Diagnostic des synchronisations OneDrive et SharePoint sur Mac.\nApplication indépendante, sans lien avec Microsoft.",
+            string: "Diagnostic des synchronisations OneDrive et SharePoint sur Mac.\nApplication indépendante, sans lien avec Microsoft.\n\nOneDrive et SharePoint sont des marques de Microsoft Corporation.",
             attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.secondaryLabelColor]))
         let centered = NSMutableParagraphStyle()
         centered.alignment = .center
@@ -121,15 +121,15 @@ enum OneDriveApp {
     }
 }
 
-/// Outil de mise au point : `DOD_STEP=6 DOD_SNAPSHOT=/chemin.png` ouvre l’étape voulue,
-/// enregistre une image de la fenêtre puis quitte ; `DOD_RUN=1` exécute l’étape avant la capture,
-/// `DOD_WAIT=<secondes>` règle le délai avant capture et `DOD_REPORT=/chemin.txt` enregistre le rapport.
+/// Outil de mise au point : `SD_STEP=6 SD_SNAPSHOT=/chemin.png` ouvre l’étape voulue,
+/// enregistre une image de la fenêtre puis quitte ; `SD_RUN=1` exécute l’étape avant la capture,
+/// `SD_WAIT=<secondes>` règle le délai avant capture et `SD_REPORT=/chemin.txt` enregistre le rapport.
 /// Sans ces variables, ne fait rien.
 enum DebugSnapshot {
     private static let env = ProcessInfo.processInfo.environment
 
     static var initialSelection: SidebarItem? {
-        guard let raw = env["DOD_STEP"] else { return .overview }
+        guard let raw = env["SD_STEP"] else { return .overview }
         switch raw {
         case "advice": return .advice
         case "reset": return .reset
@@ -139,24 +139,24 @@ enum DebugSnapshot {
         }
     }
 
-    static var autoRun: Bool { env["DOD_SNAPSHOT"] != nil && env["DOD_RUN"] != nil }
-    /// `DOD_RUN=all` lance le diagnostic complet au lieu de la seule étape affichée.
-    static var autoRunAll: Bool { env["DOD_SNAPSHOT"] != nil && env["DOD_RUN"] == "all" }
+    static var autoRun: Bool { env["SD_SNAPSHOT"] != nil && env["SD_RUN"] != nil }
+    /// `SD_RUN=all` lance le diagnostic complet au lieu de la seule étape affichée.
+    static var autoRunAll: Bool { env["SD_SNAPSHOT"] != nil && env["SD_RUN"] == "all" }
 
     static func captureIfRequested(runner: Runner) {
-        guard let path = env["DOD_SNAPSHOT"] else { return }
+        guard let path = env["SD_SNAPSHOT"] else { return }
         // La capture ne dessine pas le fond de la fenêtre : en mode sombre le texte serait blanc sur blanc.
         NSApp.appearance = NSAppearance(named: .aqua)
-        let wait = Double(env["DOD_WAIT"] ?? "") ?? 2
-        // DOD_SIZE=largeurxhauteur : taille de la fenêtre pour la capture.
-        if let size = env["DOD_SIZE"]?.split(separator: "x").compactMap({ Double($0) }), size.count == 2 {
+        let wait = Double(env["SD_WAIT"] ?? "") ?? 2
+        // SD_SIZE=largeurxhauteur : taille de la fenêtre pour la capture.
+        if let size = env["SD_SIZE"]?.split(separator: "x").compactMap({ Double($0) }), size.count == 2 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 NSApp.windows.first(where: { $0.isVisible })?
                     .setContentSize(NSSize(width: size[0], height: size[1]))
             }
         }
-        // DOD_DEMO=1 : remplace les résultats nominatifs par des données d’exemple, pour des captures publiables.
-        if env["DOD_DEMO"] != nil {
+        // SD_DEMO=1 : remplace les résultats nominatifs par des données d’exemple, pour des captures publiables.
+        if env["SD_DEMO"] != nil {
             DispatchQueue.main.asyncAfter(deadline: .now() + max(wait - 1, 0.5)) {
                 for (id, output) in DemoData.outputs {
                     runner.states[id] = StepState(output: output, running: false, lastRun: Date())
@@ -170,7 +170,7 @@ enum DebugSnapshot {
                 try? rep.representation(using: .png, properties: [:])?
                     .write(to: URL(fileURLWithPath: path))
             }
-            if let reportPath = env["DOD_REPORT"] {
+            if let reportPath = env["SD_REPORT"] {
                 var text = runner.report()
                 for id in 100..<300 where runner.state(id).lastRun != nil {
                     text += "\n[guide \(id)]\n\(runner.state(id).output)"
@@ -182,11 +182,12 @@ enum DebugSnapshot {
     }
 }
 
-/// Résultats fictifs des étapes qui affichent des noms de compte ou de fichiers (mode DOD_DEMO).
+/// Résultats fictifs des étapes qui affichent des noms de compte ou de fichiers (mode SD_DEMO).
 enum DemoData {
     private static let root = "/Users/camille/Library/CloudStorage"
 
     static let outputs: [Int: String] = [
+        1: "1432 /Applications/OneDrive.app/Contents/MacOS/OneDrive\n",
         10: """
             OneDrive-Personnel : 1248 éléments
               dont 96 dossiers et sous-dossiers, sur 5 niveaux au plus

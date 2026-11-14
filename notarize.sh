@@ -1,15 +1,15 @@
 #!/bin/zsh
 # Notarise l'app puis le .dmg auprès d'Apple et agrafe les tickets (lancer ./build.sh avant).
 # Prérequis (une seule fois) : un profil de trousseau créé avec
-#   xcrun notarytool store-credentials "DoctorOneDrive" --apple-id <identifiant Apple> --team-id <identifiant d'équipe>
+#   xcrun notarytool store-credentials "SyncDoctor" --apple-id <identifiant Apple> --team-id <identifiant d'équipe>
 set -euo pipefail
 cd "$(dirname "$0")"
 
-PROFILE="${NOTARY_PROFILE:-DoctorOneDrive}"
-APP="build/DoctorOneDrive.app"
-ZIP="build/DoctorOneDrive.zip"
+PROFILE="${NOTARY_PROFILE:-SyncDoctor}"
+APP="build/SyncDoctor.app"
+ZIP="build/SyncDoctor.zip"
 VERSION="$(defaults read "$PWD/$APP/Contents/Info.plist" CFBundleShortVersionString)"
-DMG="build/DoctorOneDrive-$VERSION.dmg"
+DMG="build/SyncDoctor-$VERSION.dmg"
 
 # 1. L'app : soumise en .zip, puis ticket agrafé pour qu'elle s'ouvre même hors ligne.
 rm -f "$ZIP"

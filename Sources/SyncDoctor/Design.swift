@@ -134,7 +134,7 @@ struct SystemStatus {
 }
 
 enum FullDiskAccess {
-    /// Vrai si macOS laisse DoctorOneDrive lire un fichier réservé aux apps ayant l’accès complet au disque.
+    /// Vrai si macOS laisse SyncDoctor lire un fichier réservé aux apps ayant l’accès complet au disque.
     static var isGranted: Bool {
         let path = NSHomeDirectory() + "/Library/Application Support/com.apple.TCC/TCC.db"
         guard let handle = FileHandle(forReadingAtPath: path) else { return false }
@@ -271,27 +271,27 @@ struct FullDiskView: View {
                             symbol: granted ? "checkmark.seal.fill" : "lock.fill",
                             tint: granted ? .green : .orange,
                             text: granted
-                                ? "DoctorOneDrive dispose de l’accès complet au disque."
-                                : "DoctorOneDrive n’a pas l’accès complet au disque.")
+                                ? "SyncDoctor dispose de l’accès complet au disque."
+                                : "SyncDoctor n’a pas l’accès complet au disque.")
                         Text("Utilité : lire le dossier des journaux de OneDrive (étapes 4, 5, 6 et 13). Pour la version Mac App Store, ce dossier se trouve dans le conteneur de OneDrive, que macOS réserve à OneDrive.")
                             .fixedSize(horizontal: false, vertical: true)
                         Button {
                             NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
                         } label: {
-                            Label("Afficher DoctorOneDrive dans le Finder", systemImage: "folder")
+                            Label("Afficher SyncDoctor dans le Finder", systemImage: "folder")
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(6)
                 } label: {
-                    Label("DoctorOneDrive", systemImage: "stethoscope").font(.headline)
+                    Label("SyncDoctor", systemImage: "stethoscope").font(.headline)
                 }
 
                 GroupBox {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Utilité : d’après Microsoft, si les dossiers Bureau et Documents ne sont pas sauvegardés, il faut utiliser la version autonome de OneDrive et lui accorder l’accès complet au disque.")
                             .fixedSize(horizontal: false, vertical: true)
-                        Text("DoctorOneDrive ne peut pas savoir si OneDrive dispose déjà de cet accès : vérifiez sa présence dans la liste de Réglages Système.")
+                        Text("SyncDoctor ne peut pas savoir si OneDrive dispose déjà de cet accès : vérifiez sa présence dans la liste de Réglages Système.")
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                         Button {

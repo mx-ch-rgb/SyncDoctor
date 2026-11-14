@@ -49,7 +49,7 @@ enum OneDriveLogs {
 
     static var expandedDir: String { (dir as NSString).expandingTildeInPath }
 
-    static let locationNote = "Emplacement des journaux : ~/Library/Logs/OneDrive pour la version autonome, ~/Library/Containers/com.microsoft.OneDrive-mac/Data/Library/Logs pour la version Mac App Store. DoctorOneDrive utilise celui qui correspond à la version installée. Pour la version Mac App Store, ce dossier appartient à une autre app : macOS n’en autorise la lecture qu’avec votre accord."
+    static let locationNote = "Emplacement des journaux : ~/Library/Logs/OneDrive pour la version autonome, ~/Library/Containers/com.microsoft.OneDrive-mac/Data/Library/Logs pour la version Mac App Store. SyncDoctor utilise celui qui correspond à la version installée. Pour la version Mac App Store, ce dossier appartient à une autre app : macOS n’en autorise la lecture qu’avec votre accord."
 
     static let collectNote = "Pour le support, Microsoft fournit aussi dans OneDrive.app le script Contents/Resources/CollectLogs.command, qui crée sur le Bureau une archive des journaux."
 }
@@ -65,8 +65,7 @@ enum Steps {
             title: "OneDrive est-il lancé ?",
             symbol: "bolt.heart",
             explanation: "Liste les processus OneDrive en cours. Si aucune ligne ne s’affiche, OneDrive n’est pas lancé : utilisez le bouton « Lancer OneDrive ».",
-            // DoctorOneDrive est exclu, sinon l’app se détecterait elle-même.
-            command: #"pgrep -fl "OneDrive" | grep -v "DoctorOneDrive""#,
+            command: #"pgrep -fl "OneDrive""#,
             emptyHint: "Aucun processus OneDrive : OneDrive n’est pas lancé."
         ),
         DiagStep(
@@ -344,8 +343,8 @@ enum DualInstall {
             command: "mount | grep -i onedrive", runnable: true),
         GuideCommand(
             id: 103, title: "Vérifier les processus",
-            note: "Liste les processus OneDrive en cours (DoctorOneDrive est exclu de la liste).",
-            command: #"pgrep -afil OneDrive | grep -v "DoctorOneDrive""#, runnable: true),
+            note: "Liste les processus OneDrive en cours.",
+            command: "pgrep -afil OneDrive", runnable: true),
         GuideCommand(
             id: 104, title: "Quitter OneDrive",
             note: "macOS peut demander l’autorisation de contrôler OneDrive.",
@@ -353,10 +352,10 @@ enum DualInstall {
         GuideCommand(
             id: 105, title: "Vérifier qu’il ne reste aucun processus",
             note: "La commande ne doit plus rien renvoyer.",
-            command: #"pgrep -afil OneDrive | grep -v "DoctorOneDrive""#, runnable: true),
+            command: "pgrep -afil OneDrive", runnable: true),
         GuideCommand(
             id: 106, title: "S’il en reste, forcer la fermeture",
-            note: "Cette commande ferme aussi DoctorOneDrive, dont le nom contient « OneDrive » : rouvrez l’app ensuite.",
+            note: "Ferme de force tous les processus dont la ligne de commande contient « OneDrive ».",
             command: "pkill -f OneDrive", danger: true),
         GuideCommand(
             id: 107, title: "Supprimer l’entrée obsolète",
