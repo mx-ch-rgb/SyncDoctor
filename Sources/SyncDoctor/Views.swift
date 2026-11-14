@@ -309,6 +309,11 @@ struct StepView: View {
                     ProgressView().controlSize(.small)
                     Text(step.isStream ? "Suivi en cours…" : "Exécution…")
                         .foregroundStyle(.secondary)
+                } else if let lastRun = state.lastRun {
+                    // L’heure change à chaque clic : on voit que l’étape a bien été relancée, même si le résultat est identique.
+                    Text("Exécuté à \(lastRun.formatted(date: .omitted, time: .standard))")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button {
@@ -350,6 +355,11 @@ struct StepView: View {
                         FullDiskAccess.openSettings()
                     } label: {
                         Label("Réglages de confidentialité", systemImage: "lock.shield")
+                    }
+                    Button {
+                        FullDiskAccess.relaunchApp()
+                    } label: {
+                        Label("Quitter et rouvrir", systemImage: "arrow.clockwise")
                     }
                 }
 

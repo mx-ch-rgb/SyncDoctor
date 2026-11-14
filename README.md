@@ -10,7 +10,7 @@ Tout le diagnostic est en lecture seule : l'app ne supprime rien et ne réinitia
 
 ## Téléchargement
 
-[Télécharger SyncDoctor (.dmg)](https://github.com/mx-ch-rgb/SyncDoctor/releases/latest/download/SyncDoctor-1.2.dmg)
+[Télécharger SyncDoctor (.dmg)](https://github.com/mx-ch-rgb/SyncDoctor/releases/latest/download/SyncDoctor-1.2.1.dmg)
 
 - macOS 27.2 ou ultérieur, Mac Apple Silicon.
 - App signée et notarisée par Apple.

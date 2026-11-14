@@ -142,6 +142,15 @@ enum FullDiskAccess {
         return true
     }
 
+    /// Rouvre l’app puis quitte l’instance en cours, pour que macOS applique une autorisation fraîchement donnée.
+    static func relaunchApp() {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: configuration) { _, _ in
+            DispatchQueue.main.async { NSApp.terminate(nil) }
+        }
+    }
+
     /// Ouvre Réglages Système > Confidentialité et sécurité > Accès complet au disque.
     static func openSettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
@@ -246,7 +255,7 @@ struct FullDiskView: View {
         "Cliquer sur « Ouvrir Accès complet au disque » ci-dessus : Réglages Système s’ouvre sur la bonne page.",
         "Cliquer sur le bouton « + » en bas de la liste, s’authentifier, puis choisir l’application à ajouter. On peut aussi glisser l’application dans la liste depuis le Finder : les boutons « Afficher dans le Finder » ci-dessus la sélectionnent pour vous.",
         "Vérifier que l’interrupteur de l’application est activé.",
-        "Quitter puis rouvrir l’application concernée : l’autorisation n’est prise en compte qu’au lancement suivant.",
+        "Quitter puis rouvrir l’application concernée : l’autorisation n’est prise en compte qu’au lancement suivant. Pour SyncDoctor, le bouton « Quitter et rouvrir SyncDoctor » ci-dessus le fait pour vous.",
     ]
 
     var body: some View {
@@ -275,10 +284,22 @@ struct FullDiskView: View {
                                 : "SyncDoctor n’a pas l’accès complet au disque.")
                         Text("Utilité : lire le dossier des journaux de OneDrive (étapes 4, 5, 6 et 13). Pour la version Mac App Store, ce dossier se trouve dans le conteneur de OneDrive, que macOS réserve à OneDrive.")
                             .fixedSize(horizontal: false, vertical: true)
-                        Button {
-                            NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
-                        } label: {
-                            Label("Afficher SyncDoctor dans le Finder", systemImage: "folder")
+                        Text("Copie en cours d’exécution, à ajouter dans la liste : \(Bundle.main.bundlePath)")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                        HStack {
+                            Button {
+                                NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
+                            } label: {
+                                Label("Afficher SyncDoctor dans le Finder", systemImage: "folder")
+                            }
+                            Button {
+                                FullDiskAccess.relaunchApp()
+                            } label: {
+                                Label("Quitter et rouvrir SyncDoctor", systemImage: "arrow.clockwise")
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

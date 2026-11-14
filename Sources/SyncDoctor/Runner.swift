@@ -50,7 +50,8 @@ final class Runner: ObservableObject {
                 denied.insert(id)
                 preface = "Attention : macOS refuse l’accès à " + blocked.joined(separator: ", ")
                     + ". Le résultat ci-dessous est donc incomplet. Autorisez SyncDoctor dans Réglages Système > "
-                    + "Confidentialité et sécurité (Fichiers et dossiers, ou Accès complet au disque), puis relancez.\n\n"
+                    + "Confidentialité et sécurité (Fichiers et dossiers, ou Accès complet au disque), "
+                    + "puis quittez et rouvrez SyncDoctor.\n\n"
             }
         }
         states[id] = StepState(output: preface, running: true, lastRun: Date())
@@ -113,8 +114,13 @@ final class Runner: ObservableObject {
             return ("""
                 macOS refuse à SyncDoctor l’accès au dossier des journaux \(shown).
 
-                Ce dossier appartient à OneDrive. Pour le lire, ajoutez SyncDoctor dans Réglages Système > \
-                Confidentialité et sécurité > Accès complet au disque, puis relancez cette étape. \
+                Ce dossier appartient à OneDrive. Pour le lire :
+                1. Ajoutez SyncDoctor dans Réglages Système > Confidentialité et sécurité > Accès complet au disque, \
+                et vérifiez que son interrupteur est activé. L’autorisation doit porter sur cette copie de SyncDoctor : \
+                \(Bundle.main.bundlePath)
+                2. Quittez puis rouvrez SyncDoctor (bouton « Quitter et rouvrir » ci-dessus) : macOS n’applique \
+                l’autorisation qu’au lancement suivant. Relancer seulement cette étape ne suffit pas.
+
                 Sans cet accord, cette étape ne peut rien conclure : ce n’est pas un résultat « sans erreur ».
 
                 \(OneDriveLogs.collectNote)
